@@ -14,5 +14,3 @@
 *.patch
 *~
 *.diff
-
-/sd-fuse*
