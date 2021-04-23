@@ -19,7 +19,7 @@ set -eu
 # http://www.gnu.org/licenses/gpl-2.0.html.
 
 function usage() {
-       echo "Usage: $0 <friendlycore-xenial_4.14_arm64|friendlywrt_4.14_arm64|eflasher>"
+       echo "Usage: $0 <friendlycore-xenial_4.14_arm64|openwrt_4.14_arm64|eflasher>"
        exit 0
 }
 
@@ -34,7 +34,7 @@ true ${SOC:=h5}
 true ${TARGET_OS:=${1,,}}
 
 case ${TARGET_OS} in
-friendlycore-xenial_4.14_arm64 | friendlywrt_4.14_arm64 | eflasher)
+friendlycore-xenial_4.14_arm64 | openwrt_4.14_arm64 | eflasher)
         ;;
 *)
         echo "Error: Unsupported target OS: ${TARGET_OS}"
@@ -59,7 +59,7 @@ if [ $# -eq 2 ]; then
 	case ${TARGET_OS} in
 	friendlycore-xenial_4.14_arm64)
 		RAW_SIZE_MB=7800 ;;
-	friendlywrt_4.14_arm64)
+	openwrt_4.14_arm64)
 		RAW_SIZE_MB=1000 ;;
 	eflasher)
 		RAW_SIZE_MB=7800 ;;
@@ -71,8 +71,8 @@ else
 	friendlycore-xenial_4.14_arm64)
 		RAW_FILE=${SOC}_sd_friendlycore-xenial_4.14_arm64-$(date +%Y%m%d).img
 		RAW_SIZE_MB=7800 ;;
-	friendlywrt_4.14_arm64)
-		RAW_FILE=${SOC}_sd_friendlywrt_4.14_arm64-$(date +%Y%m%d).img
+	openwrt_4.14_arm64)
+		RAW_FILE=${SOC}_sd_openwrt_4.14_arm64-$(date +%Y%m%d).img
 		RAW_SIZE_MB=1000 ;;
 	eflasher)
 		RAW_FILE=${SOC}_eflasher-$(date +%Y%m%d).img

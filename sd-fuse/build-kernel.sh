@@ -50,7 +50,7 @@ KMODULES_OUTDIR="${OUT}/output_${SOC}_kmodules"
 true ${KERNEL_SRC:=${OUT}/kernel-${SOC}}
 
 function usage() {
-       echo "Usage: $0 <friendlycore-xenial_4.14_arm64|friendlywrt_4.14_arm64|eflasher>"
+       echo "Usage: $0 <friendlycore-xenial_4.14_arm64|openwrt_4.14_arm64|eflasher>"
        echo "# example:"
        echo "# clone kernel source from github:"
        echo "    git clone ${KERNEL_REPO} --depth 1 -b ${KERNEL_BRANCH} ${KERNEL_SRC}"
@@ -74,7 +74,7 @@ true ${TARGET_OS:=${1,,}}
 PARTMAP=./${TARGET_OS}/partmap.txt
 
 case ${TARGET_OS} in
-friendlycore-xenial_4.14_arm64 | friendlywrt_4.14_arm64 | eflasher)
+friendlycore-xenial_4.14_arm64 | openwrt_4.14_arm64 | eflasher)
         ;;
 *)
         echo "Error: Unsupported target OS: ${TARGET_OS}"

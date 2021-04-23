@@ -22,7 +22,7 @@ set -eu
 # Checking device for fusing
 
 if [ $# -eq 0 ]; then
-	echo "Usage: $0 DEVICE <friendlycore-xenial_4.14_arm64 | friendlywrt_4.14_arm64 | eflasher>"
+	echo "Usage: $0 DEVICE <friendlycore-xenial_4.14_arm64 | openwrt_4.14_arm64 | eflasher>"
 	exit 0
 fi
 
@@ -76,7 +76,7 @@ true ${TARGET_OS:=${2,,}}
 PARTMAP=./${TARGET_OS}/partmap.txt
 
 case ${TARGET_OS} in
-friendlycore-xenial_4.14_arm64 | friendlywrt_4.14_arm64 | eflasher)
+friendlycore-xenial_4.14_arm64 | openwrt_4.14_arm64 | eflasher)
         ;;
 *)
         echo "Error: Unsupported target OS: ${TARGET_OS}"
@@ -185,7 +185,7 @@ else
 	android)
 		sleep 1
 		${SD_TUNEFS} /dev/${DEV_NAME};;
-	friendlycore* | friendlywrt* )
+	friendlycore* | openwrt* )
 		sleep 1
         echo "### try to resize2fs: /dev/${DEV_PART}"
 		resize2fs -f /dev/${DEV_PART};;

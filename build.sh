@@ -45,9 +45,9 @@ usage()
 	echo "  ./build.sh all                -build all"
 	echo "  ./build.sh uboot              -build uboot only"
 	echo "  ./build.sh kernel             -build kernel only"
-	echo "  ./build.sh friendlywrt        -build friendlywrt rootfs only"
+	echo "  ./build.sh openwrt            -build openwrt rootfs only"
 	echo "  ./build.sh sd-img             -pack sd-card image, used to create bootable SD card"
-	echo "  ./build.sh emmc-img           -pack sd-card image, used to write friendlywrt to emmc"
+	echo "  ./build.sh emmc-img           -pack sd-card image, used to write openwrt to emmc"
     echo "# clean"
     echo "  ./build.sh cleanall"
 	echo ""
@@ -103,7 +103,7 @@ function build_kernel(){
 	echo "============Start building kernel============"
 	echo "SRC                  = ${TOP_DIR}/kernel"
 	echo "TARGET_ARCH          = $TARGET_ARCH"
-        echo "TARGET_PLAT          = $TARGET_PLAT"
+    echo "TARGET_PLAT          = $TARGET_PLAT"
 	echo "TARGET_KERNEL_CONFIG = $TARGET_KERNEL_CONFIG"
 	echo "TARGET_OSNAME        = $TARGET_OSNAME"
 	echo "=========================================="
@@ -121,17 +121,17 @@ function build_kernel(){
 }
 
 
-function build_friendlywrt(){
-	# build friendlywrt
-	echo "==========Start build friendlywrt=========="
-	echo "TARGET_FRIENDLYWRT_CONFIG=$TARGET_FRIENDLYWRT_CONFIG"
-	echo "FRIENDLYWRT_SRC=$FRIENDLYWRT_SRC"
+function build_openwrt(){
+	# build openwrt
+	echo "==========Start build openwrt=========="
+	echo "TARGET_OPENWRT_CONFIG=$TARGET_OPENWRT_CONFIG"
+	echo "OPENWRT_SRC=$OPENWRT_SRC"
 	echo "========================================="
-	/usr/bin/time -f "you take %E to build friendlywrt" $SCRIPTS_DIR/mk-friendlywrt.sh $TARGET_FRIENDLYWRT_CONFIG $FRIENDLYWRT_SRC
+	/usr/bin/time -f "you take %E to build openwrt" $SCRIPTS_DIR/mk-openwrt.sh $TARGET_OPENWRT_CONFIG $OPENWRT_SRC
 	if [ $? -eq 0 ]; then
-		echo "====Building friendlywrt ok!===="
+		echo "====Building openwrt ok!===="
 	else
-		echo "====Building friendlywrt failed!===="
+		echo "====Building openwrt failed!===="
 		exit 1
 	fi
 }
@@ -139,15 +139,15 @@ function build_friendlywrt(){
 function build_all() {
 	build_uboot
 	build_kernel
-	build_friendlywrt
+	build_openwrt
 	build_sdimg
 }
 
 function clean_all(){
-	echo "clean uboot, kernel, friendlywrt, img files"
+	echo "clean uboot, kernel, openwrt, img files"
 	cd $TOP_DIR/u-boot/ && make distclean && cd -
 	cd $TOP_DIR/kernel && make distclean && cd -
-	cd $TOP_DIR/friendlywrt && make clean && cd -
+	cd $TOP_DIR/openwrt && make clean && cd -
 	cd ${SDFUSE_DIR} && ./clean.sh && cd -
 }
 
@@ -176,19 +176,19 @@ function prepare_image_for_friendlyelec_eflasher(){
     	rm -rf ${SDFUSE_DIR}/out/rootfs.*
     	ROOTFS_DIR=$(mktemp -d ${SDFUSE_DIR}/out/rootfs.XXXXXXXXX)
     fi
-    log_info "Copying ${TOP_DIR}/${FRIENDLYWRT_SRC}/${FRIENDLYWRT_ROOTFS} to ${ROOTFS_DIR}/"
-    cp -af ${TOP_DIR}/${FRIENDLYWRT_SRC}/${FRIENDLYWRT_ROOTFS}/* ${ROOTFS_DIR}/
-    for (( i=0; i<${#FRIENDLYWRT_FILES[@]}; i++ ));
+    log_info "Copying ${TOP_DIR}/${OPENWRT_SRC}/${OPENWRT_ROOTFS} to ${ROOTFS_DIR}/"
+    cp -af ${TOP_DIR}/${OPENWRT_SRC}/${OPENWRT_ROOTFS}/* ${ROOTFS_DIR}/
+    for (( i=0; i<${#OPENWRT_FILES[@]}; i++ ));
     do
         # apply patch to rootfs
-        if [ ! -z ${FRIENDLYWRT_FILES[$i]} ]; then
-            log_info "Applying ${FRIENDLYWRT_FILES[$i]} to ${ROOTFS_DIR}"
-	    if [ -f ${TOP_DIR}/${FRIENDLYWRT_FILES[$i]}/install.sh ]; then
-		(cd ${TOP_DIR}/${FRIENDLYWRT_FILES[$i]} && {
+        if [ ! -z ${OPENWRT_FILES[$i]} ]; then
+            log_info "Applying ${OPENWRT_FILES[$i]} to ${ROOTFS_DIR}"
+	    if [ -f ${TOP_DIR}/${OPENWRT_FILES[$i]}/install.sh ]; then
+		(cd ${TOP_DIR}/${OPENWRT_FILES[$i]} && {
 			./install.sh ${ROOTFS_DIR}
 		})
 	    else
-                rsync -a --no-o --no-g --exclude='.git' ${TOP_DIR}/${FRIENDLYWRT_FILES[$i]}/* ${ROOTFS_DIR}/
+                rsync -a --no-o --no-g --exclude='.git' ${TOP_DIR}/${OPENWRT_FILES[$i]}/* ${ROOTFS_DIR}/
             fi
         fi
     done
@@ -210,9 +210,9 @@ function prepare_image_for_friendlyelec_eflasher(){
                 return 1
         fi
 
-        ./tools/prepare_friendlywrt_kernelmodules.sh ${ROOTFS_DIR}
+        ./tools/prepare_openwrt_kernelmodules.sh ${ROOTFS_DIR}
 	    if [ $? -ne 0 ]; then
-                log_error "error: fail to fix kernel module for friendlywrt to rootfs.img."
+                log_error "error: fail to fix kernel module for openwrt to rootfs.img."
                 return 1
         fi
 
@@ -298,7 +298,7 @@ function build_sdimg(){
         exit 1
     fi
 
-    local ROOTFS=${TOP_DIR}/${FRIENDLYWRT_SRC}/${FRIENDLYWRT_ROOTFS}
+    local ROOTFS=${TOP_DIR}/${OPENWRT_SRC}/${OPENWRT_ROOTFS}
     prepare_image_for_friendlyelec_eflasher ${TARGET_IMAGE_DIRNAME} ${ROOTFS} && (cd ${SDFUSE_DIR} && {
 	./mk-sd-image.sh ${TARGET_IMAGE_DIRNAME} ${TARGET_SD_RAW_FILENAME}
         (cd out && {
@@ -327,7 +327,7 @@ function install_toolchain() {
 }
 
 function build_emmcimg() {
-    local ROOTFS=${TOP_DIR}/${FRIENDLYWRT_SRC}/${FRIENDLYWRT_ROOTFS}
+    local ROOTFS=${TOP_DIR}/${OPENWRT_SRC}/${OPENWRT_ROOTFS}
     prepare_image_for_friendlyelec_eflasher ${TARGET_IMAGE_DIRNAME} ${ROOTFS} && (cd ${SDFUSE_DIR} && {
 	    ./mk-emmc-image.sh ${TARGET_IMAGE_DIRNAME} ${TARGET_EFLASHER_RAW_FILENAME}
         echo "-----------------------------------------"
@@ -340,8 +340,8 @@ function build_emmcimg() {
 ##############################################
 
 # These arrays will be populated in the.mk file
-declare -a FRIENDLYWRT_PACKAGES=("")
-declare -a FRIENDLYWRT_FILES=("")
+declare -a OPENWRT_PACKAGES=("")
+declare -a OPENWRT_FILES=("")
 
 MK_LINK=".current_config.mk"
 FOUND_MK_FILE=`find device/friendlyelec -name ${1} | wc -l`
@@ -377,8 +377,8 @@ else
 	elif [ $BUILD_TARGET == kernel ];then
 		build_kernel
 		exit 0
-	elif [ $BUILD_TARGET == friendlywrt ];then
-		build_friendlywrt
+	elif [ $BUILD_TARGET == openwrt ];then
+		build_openwrt
 		exit 0
 	elif [ $BUILD_TARGET == sd-img ]; then
 		build_sdimg
